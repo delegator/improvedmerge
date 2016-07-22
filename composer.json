@@ -1,0 +1,16 @@
+{
+  "name": "delegator/improvedmerge",
+  "description": "Improvements on Magento's merged asset URL generation.",
+  "type": "magento-module",
+  "license": "Apache-2.0",
+  "require": {
+    "php": ">=5.6",
+    "magento-hackathon/magento-composer-installer": "*"
+  },
+  "extra": {
+    "map": [
+      ["app/code/local/Delegator/Improvedmerge", "app/code/local/Delegator/Improvedmerge"],
+      ["app/etc/modules/Delegator_Improvedmerge.xml", "app/etc/modules/Delegator_Improvedmerge.xml"]
+    ]
+  }
+}
