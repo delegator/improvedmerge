@@ -5,7 +5,9 @@
   "license": "Apache-2.0",
   "require": {
     "php": ">=5.6",
-    "magento-hackathon/magento-composer-installer": "*"
+    "magento-hackathon/magento-composer-installer": "*",
+    "tedivm/jshrink": "^1.1",
+    "tubalmartin/cssmin": "^2.4"
   },
   "extra": {
     "map": [
