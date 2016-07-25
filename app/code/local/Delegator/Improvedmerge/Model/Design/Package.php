@@ -15,6 +15,9 @@ class Delegator_Improvedmerge_Model_Design_Package extends Mage_Core_Model_Desig
         return $acc;
     }
 
+    /**
+     * @ignore
+     */
     public function _mergeFiles(array $srcFiles, $targetFile = false,
         $mustMerge = false, $beforeMergeCallback = null, $extensionsFilter = [])
     {
@@ -75,12 +78,18 @@ class Delegator_Improvedmerge_Model_Design_Package extends Mage_Core_Model_Desig
                }
 
                if ($extensionsFilter === ['js']) {
-                   Mage::log('minifying js!');
+                   $bench = new Ubench;
+                   $bench->start();
                    $data = \JShrink\Minifier::minify($data, ['flaggedComments' => false]);
+                   $bench->end();
+                   Mage::log('Minified JS in ' . $bench->getTime());
                } elseif ($extensionsFilter === ['css']) {
-                   Mage::log('minifying css!');
+                   $bench = new Ubench;
+                   $bench->start();
                    $compressor = new CSSmin();
                    $data = $compressor->run($data);
+                   $bench->end();
+                   Mage::log('Minified CSS in ' . $bench->getTime());
                }
 
                if ($targetFile) {
