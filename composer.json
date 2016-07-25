@@ -1,6 +1,6 @@
 {
   "name": "delegator/improvedmerge",
-  "description": "Improvements on Magento's merged asset URL generation.",
+  "description": "Improves merged JavaScript and CSS in Magento.",
   "type": "magento-module",
   "license": "Apache-2.0",
   "require": {
