@@ -82,14 +82,18 @@ class Delegator_Improvedmerge_Model_Design_Package extends Mage_Core_Model_Desig
                     $bench->start();
                     $data = \JShrink\Minifier::minify($data, ['flaggedComments' => false]);
                     $bench->end();
-                    Mage::log('Minified JS in ' . $bench->getTime());
+                    if (getenv('DG_IMPROVEDMERGE_DEBUG') !== false) {
+                        Mage::log('Minified JS in ' . $bench->getTime());
+                    }
                 } elseif ($extensionsFilter === ['css']) {
                     $bench = new Ubench;
                     $bench->start();
                     $compressor = new CSSmin();
                     $data = $compressor->run($data);
                     $bench->end();
-                    Mage::log('Minified CSS in ' . $bench->getTime());
+                    if (getenv('DG_IMPROVEDMERGE_DEBUG') !== false) {
+                        Mage::log('Minified CSS in ' . $bench->getTime());
+                    }
                 }
 
                 if ($targetFile) {
