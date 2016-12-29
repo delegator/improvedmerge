@@ -12,7 +12,7 @@
   },
   "extra": {
     "map": [
-      ["app/code/local/Delegator/Improvedmerge", "app/code/local/Delegator/Improvedmerge"],
+      ["app/code/community/Delegator/Improvedmerge", "app/code/community/Delegator/Improvedmerge"],
       ["app/etc/modules/Delegator_Improvedmerge.xml", "app/etc/modules/Delegator_Improvedmerge.xml"]
     ]
   }
