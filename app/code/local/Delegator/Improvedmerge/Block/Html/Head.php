@@ -47,7 +47,7 @@ class Delegator_Improvedmerge_Block_Html_Head extends Mage_Page_Block_Html_Head
                 $shouldMergeCss ? array(Mage::getDesign(), 'getMergedCssUrl') : null
             );
             // static and skin javascripts
-            $html .= $this->_prepareStaticAndSkinElements('<script type="text/javascript" src="%s"%s></script>' . "\n",
+            $html .= $this->_prepareStaticAndSkinElements('<script type="text/javascript" src="%s" crossorigin="anonymous"%s></script>' . "\n",
                 empty($items['js']) ? array() : $items['js'],
                 empty($items['skin_js']) ? array() : $items['skin_js'],
                 $shouldMergeJs ? array(Mage::getDesign(), 'getMergedJsUrl') : null
