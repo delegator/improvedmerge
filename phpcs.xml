@@ -14,8 +14,8 @@
     <!-- Show colors in console -->
     <arg value="-colors" />
 
-    <!-- Show warnings, show sniff codes, show progress -->
-    <arg value="wsp" />
+    <!-- No warnings, show sniff codes, show progress -->
+    <arg value="nsp" />
 
     <!-- Only lint these specific file extensions -->
     <arg name="extensions" value="php,phtml" />
