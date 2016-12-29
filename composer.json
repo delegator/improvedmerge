@@ -3,12 +3,25 @@
   "description": "Improves merged JavaScript and CSS in Magento.",
   "type": "magento-module",
   "license": "Apache-2.0",
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://packages.delegator.com"
+    }
+  ],
   "require": {
     "php": ">=5.6",
     "magento-hackathon/magento-composer-installer": "*",
     "devster/ubench": "^1.2.0",
     "tedivm/jshrink": "^1.1",
     "tubalmartin/cssmin": "^2.4"
+  },
+  "require-dev": {
+    "magento/marketplace-eqp": "^1.0.4"
+  },
+  "scripts": {
+    "setup-phpcs": "phpcs --config-set installed_paths ../../magento/marketplace-eqp",
+    "lint": "phpcs"
   },
   "extra": {
     "map": [
