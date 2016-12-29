@@ -18,9 +18,13 @@ class Delegator_Improvedmerge_Model_Design_Package extends Mage_Core_Model_Desig
     /**
      * @ignore
      */
-    public function _mergeFiles(array $srcFiles, $targetFile = false,
-                                $mustMerge = false, $beforeMergeCallback = null, $extensionsFilter = [])
-    {
+    public function _mergeFiles(
+        array $srcFiles,
+        $targetFile = false,
+        $mustMerge = false,
+        $beforeMergeCallback = null,
+        $extensionsFilter = array()
+    ) {
         try {
             // check whether merger is required
             $shouldMerge = $mustMerge || !$targetFile;
@@ -37,17 +41,20 @@ class Delegator_Improvedmerge_Model_Design_Package extends Mage_Core_Model_Desig
                     }
                 }
             }
+
             // merge contents into the file
             if ($shouldMerge) {
                 if ($targetFile && !is_writeable(dirname($targetFile))) {
                     // no translation intentionally
                     throw new Exception(sprintf('Path %s is not writeable.', dirname($targetFile)));
                 }
+
                 // filter by extensions
                 if ($extensionsFilter) {
                     if (!is_array($extensionsFilter)) {
                         $extensionsFilter = array($extensionsFilter);
                     }
+
                     if (!empty($srcFiles)) {
                         foreach ($srcFiles as $key => $file) {
                             $fileExt = strtolower(pathinfo($file, PATHINFO_EXTENSION));
@@ -57,35 +64,40 @@ class Delegator_Improvedmerge_Model_Design_Package extends Mage_Core_Model_Desig
                         }
                     }
                 }
+
                 if (empty($srcFiles)) {
                     // no translation intentionally
                     throw new Exception('No files to compile.');
                 }
+
                 $data = '';
                 foreach ($srcFiles as $file) {
                     if (!file_exists($file)) {
                         continue;
                     }
+
                     $contents = file_get_contents($file) . "\n";
                     if ($beforeMergeCallback && is_callable($beforeMergeCallback)) {
                         $contents = call_user_func($beforeMergeCallback, $file, $contents);
                     }
+
                     $data .= $contents;
                 }
+
                 if (!$data) {
                     // no translation intentionally
                     throw new Exception(sprintf("No content found in files:\n%s", implode("\n", $srcFiles)));
                 }
 
-                if ($extensionsFilter === ['js']) {
+                if ($extensionsFilter === array('js')) {
                     $bench = new Ubench;
                     $bench->start();
-                    $data = \JShrink\Minifier::minify($data, ['flaggedComments' => false]);
+                    $data = \JShrink\Minifier::minify($data, array('flaggedComments' => false));
                     $bench->end();
                     if (getenv('DG_IMPROVEDMERGE_DEBUG') !== false) {
                         Mage::log('Minified JS in ' . $bench->getTime());
                     }
-                } elseif ($extensionsFilter === ['css']) {
+                } elseif ($extensionsFilter === array('js')) {
                     $bench = new Ubench;
                     $bench->start();
                     $compressor = new CSSmin();
@@ -122,7 +134,7 @@ class Delegator_Improvedmerge_Model_Design_Package extends Mage_Core_Model_Desig
         $baseMediaUrl = Mage::getBaseUrl('media', $isSecure);
 
         // Determine timestamp of most recently modified file
-        $latestTime = array_reduce($files, [$this, 'filetimeReduce'], 0);
+        $latestTime = array_reduce($files, array($this, 'filetimeReduce'), 0);
         $filesList = implode(',', $files);
         $hash = hash('sha256', $filesList . $latestTime);
         $targetFilename = $hash . '.' . $extensions;
@@ -176,7 +188,7 @@ class Delegator_Improvedmerge_Model_Design_Package extends Mage_Core_Model_Desig
             $files,
             Mage::app()->getRequest()->isSecure() ? 'css_secure' : 'css',
             'css',
-            [$this, 'beforeMergeCss']
+            array($this, 'beforeMergeCss')
         );
     }
 }
