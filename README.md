@@ -45,6 +45,20 @@ gzip_static on;
 gzip_vary on;
 ```
 
+# Profiling
+
+Worried about speed? Specify a non-blank value for the environment variable
+`DG_IMPROVEDMERGE_DEBUG`, and the extension will log minification timings in the
+default Magento log destination. For example,
+
+```
+$ export DG_IMPROVEDMERGE_DEBUG=true
+$ <run or restart development server>
+$ tail -f var/log/system.log
+2017-01-02T17:52:42+00:00 DEBUG (7): Minified CSS in 345ms
+2017-01-02T17:52:42+00:00 DEBUG (7): Minified JS in 436ms
+```
+
 # License
 
 Please see [LICENSE][license].
