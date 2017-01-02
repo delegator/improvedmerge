@@ -1,6 +1,6 @@
 # delegator/improvedmerge
 
-This extension provides some opinionated improvements for Magento's merged JavaScript and CSS. It:
+This Magento CE 1.x extension provides some opinionated improvements for merged JavaScript and CSS. It:
 
  - Uses file timestamps as part of the asset hash calculation, which makes cachebusting more reliable
  - Upgrades from `md5` to `sha256` hash function when generating filenames
