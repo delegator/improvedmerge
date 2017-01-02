@@ -6,6 +6,7 @@ This extension provides some opinionated improvements for Magento's merged JavaS
  - Upgrades from `md5` to `sha256` hash function when generating filenames
  - Minifies JavaScript and CSS using the same compressors as [Magento 2][magento-2]
  - Writes a `.gz` version of the asset file to disk, so that Nginx can send precompressed files (requires  [`ngx_http_gzip_static_module`][nginx-gzip-static])
+ - Adds the `crossorigin="anonymous"` attribute to `<script>` tags. This allows error reporting when scripts are served from a different hostname, such as a CDN
 
 # Installing
 
