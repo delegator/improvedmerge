@@ -97,7 +97,7 @@ class Delegator_Improvedmerge_Model_Design_Package extends Mage_Core_Model_Desig
                     if (getenv('DG_IMPROVEDMERGE_DEBUG') !== false) {
                         Mage::log('Minified JS in ' . $bench->getTime());
                     }
-                } elseif ($extensionsFilter === array('js')) {
+                } elseif ($extensionsFilter === array('css')) {
                     $bench = new Ubench;
                     $bench->start();
                     $compressor = new CSSmin();
