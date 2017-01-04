@@ -5,138 +5,85 @@ class Delegator_Improvedmerge_Model_Design_Package extends Mage_Core_Model_Desig
     /**
      * @ignore
      */
-    public function filetimeReduce($acc, $item)
-    {
-        $currentItem = filemtime($item);
-        if ($currentItem > $acc) {
-            return $currentItem;
-        }
-
-        return $acc;
-    }
-
-    /**
-     * @ignore
-     */
-    public function _mergeFiles(
-        array $srcFiles,
-        $targetFile = false,
-        $mustMerge = false,
-        $beforeMergeCallback = null,
+    public function minifyAndWriteContents(
+        $concatData,
+        $targetFile,
         $extensionsFilter = array()
     ) {
+        $data = $concatData;
+
         try {
-            // check whether merger is required
-            $shouldMerge = $mustMerge || !$targetFile;
-            if (!$shouldMerge) {
-                if (!file_exists($targetFile)) {
-                    $shouldMerge = true;
-                } else {
-                    $targetMtime = filemtime($targetFile);
-                    foreach ($srcFiles as $file) {
-                        if (!file_exists($file) || @filemtime($file) > $targetMtime) {
-                            $shouldMerge = true;
-                            break;
-                        }
-                    }
+            if ($extensionsFilter === 'js') {
+                $jsbench = new Ubench;
+                $jsbench->start();
+                $data = \JShrink\Minifier::minify($concatData);
+                $jsbench->end();
+                if (getenv('DG_IMPROVEDMERGE_DEBUG') !== false) {
+                    Mage::log('Minified JS in ' . $jsbench->getTime());
+                }
+            } elseif ($extensionsFilter === 'css') {
+                $cssbench = new Ubench;
+                $cssbench->start();
+                $compressor = new CSSmin();
+                $data = $compressor->run($concatData);
+                $cssbench->end();
+                if (getenv('DG_IMPROVEDMERGE_DEBUG') !== false) {
+                    Mage::log('Minified CSS in ' . $cssbench->getTime());
                 }
             }
-
-            // merge contents into the file
-            if ($shouldMerge) {
-                if ($targetFile && !is_writeable(dirname($targetFile))) {
-                    // no translation intentionally
-                    throw new Exception(sprintf('Path %s is not writeable.', dirname($targetFile)));
-                }
-
-                // filter by extensions
-                if ($extensionsFilter) {
-                    if (!is_array($extensionsFilter)) {
-                        $extensionsFilter = array($extensionsFilter);
-                    }
-
-                    if (!empty($srcFiles)) {
-                        foreach ($srcFiles as $key => $file) {
-                            $fileExt = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-                            if (!in_array($fileExt, $extensionsFilter)) {
-                                unset($srcFiles[$key]);
-                            }
-                        }
-                    }
-                }
-
-                if (empty($srcFiles)) {
-                    // no translation intentionally
-                    throw new Exception('No files to compile.');
-                }
-
-                $data = '';
-                foreach ($srcFiles as $file) {
-                    if (!file_exists($file)) {
-                        continue;
-                    }
-
-                    $contents = file_get_contents($file) . "\n";
-                    if ($beforeMergeCallback && is_callable($beforeMergeCallback)) {
-                        $contents = call_user_func($beforeMergeCallback, $file, $contents);
-                    }
-
-                    $data .= $contents;
-                }
-
-                if (!$data) {
-                    // no translation intentionally
-                    throw new Exception(sprintf("No content found in files:\n%s", implode("\n", $srcFiles)));
-                }
-
-                if ($extensionsFilter === array('js')) {
-                    $bench = new Ubench;
-                    $bench->start();
-                    $data = \JShrink\Minifier::minify($data, array('flaggedComments' => false));
-                    $bench->end();
-                    if (getenv('DG_IMPROVEDMERGE_DEBUG') !== false) {
-                        Mage::log('Minified JS in ' . $bench->getTime());
-                    }
-                } elseif ($extensionsFilter === array('css')) {
-                    $bench = new Ubench;
-                    $bench->start();
-                    $compressor = new CSSmin();
-                    $data = $compressor->run($data);
-                    $bench->end();
-                    if (getenv('DG_IMPROVEDMERGE_DEBUG') !== false) {
-                        Mage::log('Minified CSS in ' . $bench->getTime());
-                    }
-                }
-
-                if ($targetFile) {
-                    file_put_contents($targetFile, $data, LOCK_EX);
-                    file_put_contents($targetFile . '.gz', gzencode($data, 9), LOCK_EX);
-                } else {
-                    return $data; // no need to write to file, just return data
-                }
-            }
-
-            return true; // no need in merger or merged into file successfully
         } catch (Exception $e) {
             Mage::logException($e);
         }
 
-        return false;
+        file_put_contents($targetFile, $data, LOCK_EX);
+        file_put_contents($targetFile . '.gz', gzencode($data, 9), LOCK_EX);
+
+        return true;
     }
 
     /**
      * @ignore
      */
-    public function getMergedFilesUrl($files, $mergeDir, $extensions, $callbacks = null)
+    public function getConcatContents($files, $callback = null)
+    {
+        $data = '';
+
+        foreach ($files as $file) {
+            if (!file_exists($file)) {
+                continue;
+            }
+
+            $contents = file_get_contents($file) . "\n";
+            if ($callback && is_callable($callback)) {
+                $contents = call_user_func($callback, $file, $contents);
+            }
+
+            $data .= $contents;
+        }
+
+        return $data;
+    }
+
+    /**
+     * @ignore
+     */
+    public function getMergedFilesUrl($files, $mergeDir, $extensions, $callback = null)
     {
         // Assemble media URL
         $isSecure = Mage::app()->getRequest()->isSecure();
         $baseMediaUrl = Mage::getBaseUrl('media', $isSecure);
 
-        // Determine timestamp of most recently modified file
-        $latestTime = array_reduce($files, array($this, 'filetimeReduce'), 0);
-        $filesList = implode(',', $files);
-        $hash = hash('sha256', $filesList . $latestTime);
+        // Determine target filename based on contents
+        $hashbench = new Ubench;
+        $hashbench->start();
+        $concatData = $this->getConcatContents($files, $callback);
+        $hash = hash('sha1', $concatData);
+        $hashbench->end();
+        if (getenv('DG_IMPROVEDMERGE_DEBUG') !== false) {
+            Mage::log("Concat and hash for {$hash}.{$extensions} completed in " . $hashbench->getTime());
+        }
+
+        // Comment here
         $targetFilename = $hash . '.' . $extensions;
 
         // Initialize merge directory
@@ -145,20 +92,15 @@ class Delegator_Improvedmerge_Model_Design_Package extends Mage_Core_Model_Desig
             return '';
         }
 
-        // Try to merge files
-        $mergeFilesResult = $this->_mergeFiles(
-            $files,
-            $targetDir . DS . $targetFilename,
-            false,
-            $callbacks,
-            $extensions
-        );
-
-        if ($mergeFilesResult) {
+        // Full path
+        $fullPath = $targetDir . DS . $targetFilename;
+        if (is_readable($fullPath)) {
             return $baseMediaUrl . $mergeDir . '/' . $targetFilename;
         }
 
-        return '';
+        // Try to minify files, always write contents
+        $this->minifyAndWriteContents($concatData, $fullPath, $extensions);
+        return $baseMediaUrl . $mergeDir . '/' . $targetFilename;
     }
 
     /**
@@ -186,7 +128,7 @@ class Delegator_Improvedmerge_Model_Design_Package extends Mage_Core_Model_Desig
     {
         return $this->getMergedFilesUrl(
             $files,
-            Mage::app()->getRequest()->isSecure() ? 'css_secure' : 'css',
+            'css',
             'css',
             array($this, 'beforeMergeCss')
         );

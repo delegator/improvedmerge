@@ -5,8 +5,8 @@
 This Magento CE 1.x extension provides some opinionated improvements for merged JavaScript and CSS.
 
 ## :white_check_mark: Features
- - Uses file timestamps as part of the asset hash calculation, which makes cachebusting more reliable
- - Upgrades from `md5` to `sha256` hash function when generating filenames
+ - Uses file contents to compute the asset hash instead of file names, which makes cachebusting more reliable
+ - Upgrades from `md5` to `sha1` hash function when generating filenames
  - Minifies JavaScript and CSS using the same compressors as [Magento 2][magento-2]
  - Writes a `.gz` version of the asset file to disk, so that Nginx can send precompressed files (requires  [`ngx_http_gzip_static_module`][nginx-gzip-static])
 
@@ -68,7 +68,7 @@ Worried about speed? Specify a non-blank value for the environment variable
 `DG_IMPROVEDMERGE_DEBUG`, and the extension will log minification timings in the
 default Magento log destination. For example,
 
-```
+```bash
 $ export DG_IMPROVEDMERGE_DEBUG=true
 $ <run or restart development server>
 $ tail -f var/log/system.log
