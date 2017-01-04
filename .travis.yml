@@ -11,3 +11,4 @@ install:
   - composer run setup-phpcs
 script:
   - composer run lint
+  - composer run syntax

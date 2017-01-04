@@ -21,8 +21,9 @@
   },
   "scripts": {
     "clean": "rm -rf vendor composer.lock",
+    "lint": "phpcs",
     "setup-phpcs": "phpcs --config-set installed_paths ../../magento/marketplace-eqp",
-    "lint": "phpcs"
+    "syntax": "git ls-files | grep .php | xargs -L 1 php -l"
   },
   "extra": {
     "map": [
