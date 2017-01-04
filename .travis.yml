@@ -9,5 +9,5 @@ env:
 install:
   - composer install
   - composer run setup-phpcs
-test:
+script:
   - composer run lint
