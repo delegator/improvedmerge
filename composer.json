@@ -20,6 +20,7 @@
     "magento/marketplace-eqp": "^1.0.4"
   },
   "scripts": {
+    "clean": "rm -rf vendor composer.lock",
     "setup-phpcs": "phpcs --config-set installed_paths ../../magento/marketplace-eqp",
     "lint": "phpcs"
   },
