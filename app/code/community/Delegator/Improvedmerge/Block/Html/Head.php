@@ -2,13 +2,6 @@
 
 class Delegator_Improvedmerge_Block_Html_Head extends Mage_Page_Block_Html_Head
 {
-    public function addVendorJs($name)
-    {
-        $vendorPath = 'vendor/node_modules/' . $name;
-        $this->addItem('js', $vendorPath, 'data-vendor="true"');
-        return $this;
-    }
-
     public function getCssJsHtml()
     {
         // separate items by types
