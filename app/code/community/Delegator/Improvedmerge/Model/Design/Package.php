@@ -9,36 +9,57 @@ class Delegator_Improvedmerge_Model_Design_Package extends Mage_Core_Model_Desig
         $concatData,
         $targetFile,
         $extensionsFilter = array()
-    ) {
+    )
+    {
         $data = $concatData;
 
         try {
             if ($extensionsFilter === 'js') {
                 $jsbench = new Ubench;
                 $jsbench->start();
-                $data = \JShrink\Minifier::minify($concatData);
+                $data = \JShrink\Minifier::minify($concatData, array('flaggedComments' => false));
                 $jsbench->end();
-                if (getenv('DG_IMPROVEDMERGE_DEBUG') !== false) {
-                    Mage::log('Minified JS in ' . $jsbench->getTime());
-                }
+                $this->debugLog('Minified JS in ' . $jsbench->getTime());
             } elseif ($extensionsFilter === 'css') {
                 $cssbench = new Ubench;
                 $cssbench->start();
-                $compressor = new CSSmin();
+                $compressor = new tubalmartin\CssMin\Minifier();
+                $compressor->removeImportantComments(true);
                 $data = $compressor->run($concatData);
                 $cssbench->end();
-                if (getenv('DG_IMPROVEDMERGE_DEBUG') !== false) {
-                    Mage::log('Minified CSS in ' . $cssbench->getTime());
-                }
+                $this->debugLog('Minified CSS in ' . $cssbench->getTime());
             }
         } catch (Exception $e) {
             Mage::logException($e);
         }
 
         file_put_contents($targetFile, $data, LOCK_EX);
+
+        $compressBench = new Ubench;
+        $compressBench->start();
         file_put_contents($targetFile . '.gz', gzencode($data, 9), LOCK_EX);
+        $compressBench->end();
+        $this->debugLog('Wrote compressed file in ' . $compressBench->getTime());
 
         return true;
+    }
+
+    /**
+     * @ignore
+     */
+    public function debugLog($message)
+    {
+        if (getenv('DG_IMPROVEDMERGE_DEBUG') !== false) {
+            Mage::log($message);
+        }
+    }
+
+    /**
+     * @ignore
+     */
+    public function getFileExtension($filename)
+    {
+        return substr(strrchr($filename, '.'), 1);
     }
 
     /**
@@ -59,6 +80,11 @@ class Delegator_Improvedmerge_Model_Design_Package extends Mage_Core_Model_Desig
             }
 
             $data .= $contents;
+
+            $extension = $this->getFileExtension($file);
+            if ($extension === 'js') {
+                $data .= ";\n";
+            }
         }
 
         return $data;
