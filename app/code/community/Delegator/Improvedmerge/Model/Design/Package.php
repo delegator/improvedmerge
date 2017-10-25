@@ -33,8 +33,10 @@ class Delegator_Improvedmerge_Model_Design_Package extends Mage_Core_Model_Desig
             Mage::logException($e);
         }
 
+        // Write regular file
         file_put_contents($targetFile, $data, LOCK_EX);
 
+        // Write pre-compressed (gzip) file
         $compressBench = new Ubench;
         $compressBench->start();
         file_put_contents($targetFile . '.gz', gzencode($data, 9), LOCK_EX);
@@ -45,7 +47,9 @@ class Delegator_Improvedmerge_Model_Design_Package extends Mage_Core_Model_Desig
     }
 
     /**
-     * @ignore
+     * Logs a debug message to the default log facility. This method will only
+     * attempt to log the message if the environment variable
+     * DG_IMPROVEDMERGE_DEBUG is present.
      */
     public function debugLog($message)
     {
@@ -55,11 +59,14 @@ class Delegator_Improvedmerge_Model_Design_Package extends Mage_Core_Model_Desig
     }
 
     /**
-     * @ignore
+     * Returns the extension for a given path.
+     *
+     * @param string $path
+     * @return string Returns the portion of the filename in $path, starting from the last period.
      */
-    public function getFileExtension($filename)
+    public function getFileExtension($path)
     {
-        return substr(strrchr($filename, '.'), 1);
+        return strrchr($path, '.');
     }
 
     /**
@@ -82,7 +89,8 @@ class Delegator_Improvedmerge_Model_Design_Package extends Mage_Core_Model_Desig
             $data .= $contents;
 
             $extension = $this->getFileExtension($file);
-            if ($extension === 'js') {
+            if ($extension === '.js') {
+                // Always terminate the final statement of a JavaScript file.
                 $data .= ";\n";
             }
         }
@@ -105,11 +113,10 @@ class Delegator_Improvedmerge_Model_Design_Package extends Mage_Core_Model_Desig
         $concatData = $this->getConcatContents($files, $callback);
         $hash = hash('sha1', $concatData);
         $hashbench->end();
-        if (getenv('DG_IMPROVEDMERGE_DEBUG') !== false) {
-            Mage::log("Concat and hash for {$hash}.{$extensions} completed in " . $hashbench->getTime());
-        }
+        $this->debugLog("Concat and hash for {$hash}.{$extensions} completed in " . $hashbench->getTime());
 
-        // Comment here
+        // Use the sha1 hash in the asset filename for cachebusting
+        // This generates something like aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d.js
         $targetFilename = $hash . '.' . $extensions;
 
         // Initialize merge directory
