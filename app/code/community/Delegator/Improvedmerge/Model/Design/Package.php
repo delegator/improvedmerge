@@ -2,46 +2,39 @@
 
 class Delegator_Improvedmerge_Model_Design_Package extends Mage_Core_Model_Design_Package
 {
+    protected $compressBench;
+    protected $hashBench;
+    protected $writeBench;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->compressBench = Mage::getModel('delegator_improvedmerge/bench');
+        $this->hashBench = Mage::getModel('delegator_improvedmerge/bench');
+        $this->writeBench = Mage::getModel('delegator_improvedmerge/bench');
+    }
+
     /**
      * @ignore
      */
-    public function minifyAndWriteContents(
+    public function writeFiles(
         $concatData,
         $targetFile,
         $extensionsFilter = array()
     )
     {
-        $data = $concatData;
-
-        try {
-            if ($extensionsFilter === 'js') {
-                $jsbench = new Ubench;
-                $jsbench->start();
-                $data = \JShrink\Minifier::minify($concatData, array('flaggedComments' => false));
-                $jsbench->end();
-                $this->debugLog('Minified JS in ' . $jsbench->getTime());
-            } elseif ($extensionsFilter === 'css') {
-                $cssbench = new Ubench;
-                $cssbench->start();
-                $compressor = new tubalmartin\CssMin\Minifier();
-                $compressor->removeImportantComments(true);
-                $data = $compressor->run($concatData);
-                $cssbench->end();
-                $this->debugLog('Minified CSS in ' . $cssbench->getTime());
-            }
-        } catch (Exception $e) {
-            Mage::logException($e);
-        }
-
-        // Write regular file
-        file_put_contents($targetFile, $data, LOCK_EX);
+        // Write regular, concatenated file
+        $this->writeBench->start();
+        file_put_contents($targetFile, $concatData, LOCK_EX);
+        $this->writeBench->end();
+        $this->debugLog('Wrote regular file in ' . $this->compressBench->getTime());
 
         // Write pre-compressed (gzip) file
-        $compressBench = new Ubench;
-        $compressBench->start();
-        file_put_contents($targetFile . '.gz', gzencode($data, 9), LOCK_EX);
-        $compressBench->end();
-        $this->debugLog('Wrote compressed file in ' . $compressBench->getTime());
+        $this->compressBench->start();
+        file_put_contents($targetFile . '.gz', gzencode($concatData, 9), LOCK_EX);
+        $this->compressBench->end();
+        $this->debugLog('Wrote compressed file in ' . $this->compressBench->getTime());
 
         return true;
     }
@@ -108,12 +101,11 @@ class Delegator_Improvedmerge_Model_Design_Package extends Mage_Core_Model_Desig
         $baseMediaUrl = Mage::getBaseUrl('media', $isSecure);
 
         // Determine target filename based on contents
-        $hashbench = new Ubench;
-        $hashbench->start();
+        $this->hashBench->start();
         $concatData = $this->getConcatContents($files, $callback);
         $hash = hash('sha1', $concatData);
-        $hashbench->end();
-        $this->debugLog("Concat and hash for {$hash}.{$extensions} completed in " . $hashbench->getTime());
+        $this->hashBench->end();
+        $this->debugLog("Concat and hash for {$hash}.{$extensions} completed in " . $this->hashBench->getTime());
 
         // Use the sha1 hash in the asset filename for cachebusting
         // This generates something like aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d.js
@@ -131,8 +123,8 @@ class Delegator_Improvedmerge_Model_Design_Package extends Mage_Core_Model_Desig
             return $baseMediaUrl . $mergeDir . '/' . $targetFilename;
         }
 
-        // Try to minify files, always write contents
-        $this->minifyAndWriteContents($concatData, $fullPath, $extensions);
+        // Write concat and pre-gzip files to disk
+        $this->writeFiles($concatData, $fullPath, $extensions);
         return $baseMediaUrl . $mergeDir . '/' . $targetFilename;
     }
 

@@ -12,5 +12,6 @@ install:
 script:
   - composer run lint
   - composer run syntax
+  - composer run test
 notifications:
   email: false

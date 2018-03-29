@@ -14,6 +14,9 @@
                     <design_package>Delegator_Improvedmerge_Model_Design_Package</design_package>
                 </rewrite>
             </core>
+            <delegator_improvedmerge>
+                <class>Delegator_Improvedmerge_Model</class>
+            </delegator_improvedmerge>
         </models>
     </global>
 </config>

@@ -5,15 +5,21 @@
 This Magento CE 1.x extension provides some opinionated improvements for merged JavaScript and CSS.
 
 ## :white_check_mark: Features
+
+ - No runtime dependencies
  - Uses file contents to compute the asset hash instead of file names, which makes cachebusting more reliable
- - Upgrades from `md5` to `sha1` hash function when generating filenames
- - Minifies JavaScript and CSS using the same compressors as [Magento 2][magento-2]
+ - Uses `sha1` hash function to generate filenames
  - Writes a `.gz` version of the asset file to disk, so that Nginx can send precompressed files (requires  [`ngx_http_gzip_static_module`][nginx-gzip-static])
 
 ## :warning: Features that can easily break things if misconfigured
+
  - Adds the `crossorigin="anonymous"` attribute to all `<script>` tags. This allows error reporting when scripts are served from a different hostname, such as a CDN.
 
  When serving `.js` assets, You MUST provide a value for the `Access-Control-Allow-Origin` HTTP header, otherwise browsers will reject the download.
+
+## :no_entry: Non-Features
+
+ - Asset minification. PHP is not good at performing this task.
 
 # Installing
 
@@ -65,15 +71,15 @@ location ~* \.(?:css|js)$ {
 # Profiling
 
 Worried about speed? Specify a non-blank value for the environment variable
-`DG_IMPROVEDMERGE_DEBUG`, and the extension will log minification timings in the
+`DG_IMPROVEDMERGE_DEBUG`, and the extension will log timings in the
 default Magento log destination. For example,
 
 ```bash
 $ export DG_IMPROVEDMERGE_DEBUG=true
 $ <run or restart development server>
 $ tail -f var/log/system.log
-2017-01-02T17:52:42+00:00 DEBUG (7): Minified CSS in 345ms
-2017-01-02T17:52:42+00:00 DEBUG (7): Minified JS in 436ms
+2018-03-29T21:39:07+00:00 DEBUG (7): Wrote compressed file in 5ms
+2018-03-29T21:39:07+00:00 DEBUG (7): Concat and hash for 0ad0b7c23680e47320a4937d1145feb765f90aed.js completed in 10ms
 ```
 
 # License

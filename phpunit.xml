@@ -1,0 +1,19 @@
+<phpunit
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="http://schema.phpunit.de/6.5/phpunit.xsd"
+    colors="true"
+    bootstrap="vendor/autoload.php">
+    <testsuites>
+        <testsuite name="unit">
+            <directory>test/unit</directory>
+        </testsuite>
+    </testsuites>
+    <logging>
+        <log type="coverage-html" target="coverage" />
+    </logging>
+    <filter>
+        <whitelist>
+            <directory suffix=".php">app/code/community/Delegator/Improvedmerge</directory>
+        </whitelist>
+    </filter>
+</phpunit>
