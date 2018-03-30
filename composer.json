@@ -15,14 +15,12 @@
   },
   "require-dev": {
     "magento/marketplace-eqp": "^1.0.5",
-    "phpunit/phpunit": "^6.5.7"
   },
   "scripts": {
     "clean": "rm -rf vendor composer.lock",
     "lint": "phpcs",
     "setup-phpcs": "phpcs --config-set installed_paths ../../magento/marketplace-eqp",
-    "syntax": "git ls-files | grep .php | xargs -L 1 php -l",
-    "test": "phpunit"
+    "syntax": "git ls-files | grep .php | xargs -L 1 php -l"
   },
   "extra": {
     "map": [
