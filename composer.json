@@ -14,7 +14,7 @@
     "magento-hackathon/magento-composer-installer": "*"
   },
   "require-dev": {
-    "magento/marketplace-eqp": "^1.0.5",
+    "magento/marketplace-eqp": "^1.0.5"
   },
   "scripts": {
     "clean": "rm -rf vendor composer.lock",
